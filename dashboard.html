@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Resume Matcher</title>
+<title>AI Resume Analyzer</title>
 
 <style>
 body{
@@ -14,38 +14,54 @@ height:100vh;
 margin:0;
 }
 
+.container{
+text-align:center;
+}
+
+h1{
+color:white;
+margin-bottom:5px;
+}
+
+.subtitle{
+color:#e0e7ff;
+margin-bottom:25px;
+}
+
 .card{
 background:white;
 padding:30px;
-border-radius:15px;
-text-align:center;
+border-radius:20px;
 width:350px;
-box-shadow:0 10px 25px rgba(0,0,0,0.2);
+margin:auto;
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
 }
 
-button{
-padding:12px;
-border:none;
-background:#667eea;
+.file{
+margin-bottom:20px;
+}
+
+.scan{
+background:#6366f1;
 color:white;
-border-radius:8px;
-cursor:pointer;
+padding:12px;
 width:100%;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-size:16px;
 }
 
-button:hover{
-background:#5a67d8;
-}
-
-.result{
-margin-top:20px;
+.scan:hover{
+background:#4f46e5;
 }
 
 .job{
 border:1px solid #eee;
 padding:15px;
-margin-top:10px;
+margin-top:15px;
 border-radius:10px;
+text-align:left;
 }
 </style>
 
@@ -53,23 +69,28 @@ border-radius:10px;
 
 <body>
 
+<div class="container">
+
+<h1>AI Resume Analyzer</h1>
+<p class="subtitle">Upload your resume and discover best job matches</p>
+
 <div class="card">
 
-<h2>Upload Resume</h2>
+<input type="file" id="resume" class="file">
 
-<input type="file" id="resume">
-<br><br>
+<button onclick="readResume()" class="scan">
+Analyze Resume
+</button>
 
-<button onclick="readResume()">Scan Resume</button>
+<div id="result"></div>
 
-<div id="result" class="result"></div>
+</div>
 
 </div>
 
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
 <script>
 
@@ -84,6 +105,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
+
 
 function readResume(){
 
@@ -115,17 +137,22 @@ snapshot.forEach(doc=>{
 
 let job=doc.data();
 
-let matchSkills=job.skills.filter(skill =>
+let matched = job.skills.filter(skill =>
 resumeText.includes(skill.toLowerCase())
 );
 
-let score=Math.round((matchSkills.length/job.skills.length)*100);
+let missing = job.skills.filter(skill =>
+!resumeText.includes(skill.toLowerCase())
+);
+
+let score = Math.round((matched.length/job.skills.length)*100);
 
 if(score>0){
 jobs.push({
 title:job.title,
 score:score,
-skills:matchSkills
+matched:matched,
+missing:missing
 });
 }
 
@@ -139,14 +166,24 @@ jobs.slice(0,3).forEach(job=>{
 output+=`
 <div class="job">
 <h3>${job.title}</h3>
+
 <p>Match Score: <b>${job.score}%</b></p>
-<p>${job.skills.join(", ")}</p>
+
+<p><b>Matched Skills:</b><br>
+${job.matched.join(", ")||"None"}
+</p>
+
+<p style="color:red">
+<b>Missing Skills:</b><br>
+${job.missing.join(", ")||"None"}
+</p>
+
 </div>
 `;
 });
 
-document.getElementById("result").innerHTML=
-output||"No matching jobs found";
+document.getElementById("result").innerHTML =
+output || "No matching jobs found";
 
 });
 }
