@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>History</title>
+
+<style>
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#667eea,#764ba2);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:20px;
+width:350px;
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
+}
+
+.item{
+border:1px solid #eee;
+padding:10px;
+margin-bottom:10px;
+border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>Your History</h2>
+<div id="historyList">Loading...</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBvJGcM5bKgsdaiTSP4yytC-6Kldc-J35I",
+  authDomain: "job-app-683fa.firebaseapp.com",
+  projectId: "job-app-683fa",
+  storageBucket: "job-app-683fa.firebasestorage.app",
+  messagingSenderId: "951123608239",
+  appId: "1:951123608239:web:1e75570a094bc98b2b4a5a"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+
+
+firebase.auth().onAuthStateChanged(user=>{
+
+if(!user){
+document.getElementById("historyList").innerHTML="Login first";
+return;
+}
+
+db.collection("users")
+.doc(user.uid)
+.collection("history")
+.orderBy("date","desc")
+.get()
+.then(snapshot=>{
+
+let html="";
+
+snapshot.forEach(doc=>{
+let data=doc.data();
+
+html+=`
+<div class="item">
+<b>${data.title}</b><br>
+Score: ${data.score}%<br>
+<small>${data.date}</small>
+</div>
+`;
+});
+
+document.getElementById("historyList").innerHTML =
+html || "No history yet";
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
