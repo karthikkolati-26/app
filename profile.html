@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Profile</title>
+
+<style>
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#667eea,#764ba2);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:20px;
+width:300px;
+text-align:center;
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+
+button{
+padding:12px;
+width:100%;
+margin-top:15px;
+border:none;
+border-radius:10px;
+background:#6366f1;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#4f46e5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>User Profile</h2>
+
+<p id="email">Loading...</p>
+
+<button onclick="location.href='dashboard.html'">
+Go Dashboard
+</button>
+
+<button onclick="logout()">
+Logout
+</button>
+
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBvJGcM5bKgsdaiTSP4yytC-6Kldc-J35I",
+  authDomain: "job-app-683fa.firebaseapp.com",
+  projectId: "job-app-683fa",
+  storageBucket: "job-app-683fa.firebasestorage.app",
+  messagingSenderId: "951123608239",
+  appId: "1:951123608239:web:1e75570a094bc98b2b4a5a"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+
+
+// LOAD USER
+auth.onAuthStateChanged(user=>{
+
+if(!user){
+location.href="login.html";
+return;
+}
+
+document.getElementById("email").innerText="Email: "+user.email;
+
+});
+
+
+// LOGOUT
+function logout(){
+auth.signOut().then(()=>{
+location.href="login.html";
+});
+}
+
+</script>
+
+</body>
+</html>
