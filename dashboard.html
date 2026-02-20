@@ -1,219 +1,324 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>AI Resume Analyzer</title>
+<title>Dashboard</title>
 
 <style>
-body{
-font-family:Arial;
-background:linear-gradient(135deg,#667eea,#764ba2);
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-margin:0;
+body{margin:0;font-family:Segoe UI;background:#f4f6fb;display:flex}
+
+.sidebar{
+width:220px;height:100vh;background:#667eea;color:white;
+padding-top:30px;position:fixed
 }
 
-.container{
-text-align:center;
+.sidebar h2{text-align:center;margin-bottom:30px}
+
+.sidebar button{
+display:block;width:80%;margin:12px auto;padding:12px;
+border:none;border-radius:8px;background:white;color:#667eea;
+font-weight:bold;cursor:pointer
 }
 
-h1{
-color:white;
-margin-bottom:5px;
-}
-
-.subtitle{
-color:#e0e7ff;
-margin-bottom:25px;
-}
+.main{margin-left:220px;width:100%;padding:40px}
 
 .card{
-background:white;
-padding:30px;
-border-radius:20px;
-width:350px;
-margin:auto;
-box-shadow:0 20px 40px rgba(0,0,0,0.2);
+background:white;padding:30px;border-radius:18px;width:520px;
+margin:auto;box-shadow:0 20px 50px rgba(0,0,0,0.1);text-align:center
 }
 
-.scan{
-background:#6366f1;
-color:white;
-padding:12px;
-width:100%;
-border:none;
-border-radius:10px;
-cursor:pointer;
-font-size:16px;
-margin-top:15px;
-}
-
-.scan:hover{
-background:#4f46e5;
+.primary{
+background:#667eea;color:white;border:none;padding:12px;
+border-radius:10px;width:100%;margin-top:15px;cursor:pointer
 }
 
 .job{
-border:1px solid #eee;
-padding:15px;
-margin-top:15px;
-border-radius:10px;
-text-align:left;
+border:1px solid #eee;padding:20px;margin-top:20px;
+border-radius:12px;text-align:left
 }
-</style>
 
+.best{
+border:2px solid #4CAF50;background:#e8f5e9
+}
+
+.skillBox{
+margin-top:10px;padding:12px;background:#f9fafc;
+border-radius:10px;border:1px solid #eee
+}
+
+.learn{
+display:inline-block;margin-top:6px;
+color:#667eea;font-weight:bold;text-decoration:none
+}
+
+.loader{font-size:18px;font-weight:bold;color:#667eea}
+</style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>Analyzer</h2>
+<button onclick="location.href='history.html'">History</button>
+<button onclick="logout()">Logout</button>
+</div>
 
-<h1>AI Resume Analyzer</h1>
-<p class="subtitle">Upload your resume and discover best job matches</p>
-
+<!-- MAIN -->
+<div class="main">
 <div class="card">
 
-<input type="file" id="resume">
-
-<button onclick="readResume()" class="scan">
-Analyze Resume
-</button>
+<h3>Upload Resume</h3>
+<input type="file" id="file"><br>
+<button class="primary" onclick="analyze()">Analyze Resume</button>
 
 <div id="result"></div>
 
 </div>
-
 </div>
 
-
+<!-- LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBvJGcM5bKgsdaiTSP4yytC-6Kldc-J35I",
-  authDomain: "job-app-683fa.firebaseapp.com",
-  projectId: "job-app-683fa",
-  storageBucket: "job-app-683fa.firebasestorage.app",
-  messagingSenderId: "951123608239",
-  appId: "1:951123608239:web:1e75570a094bc98b2b4a5a"
+/* ================= FIREBASE ================= */
+
+const firebaseConfig={
+apiKey:"AIzaSyBvJGcM5bKgsdaiTSP4yytC-6Kldc-J35I",
+authDomain:"job-app-683fa.firebaseapp.com",
+projectId:"job-app-683fa",
+storageBucket:"job-app-683fa.firebasestorage.app",
+messagingSenderId:"951123608239",
+appId:"1:951123608239:web:1e75570a094bc98b2b4a5a"
 };
 
 firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
 const db=firebase.firestore();
 
+auth.onAuthStateChanged(user=>{
+if(!user) location.href="login.html";
+});
 
-function readResume(){
-
-let file=document.getElementById("resume").files[0];
-
-if(!file){
-alert("Upload resume first");
-return;
+function logout(){
+auth.signOut().then(()=>location.href="login.html");
 }
 
-let reader=new FileReader();
 
-reader.onload=function(e){
-let text=e.target.result.toLowerCase();
-matchJobs(text);
+/* ================= COURSES ================= */
+
+const courses={
+html:"https://youtu.be/qz0aGYrrlhU",
+css:"https://youtu.be/1Rs2ND1ryYc",
+javascript:"https://youtu.be/PkZNo7MFNFg",
+react:"https://youtu.be/bMknfKXIFA8",
+node:"https://youtu.be/TlB_eWDSMt4",
+python:"https://youtu.be/_uQrJ0TkZlc",
+sql:"https://youtu.be/HXV3zeQKqGY",
+excel:"https://youtu.be/rwbho0CgEAE",
+"power bi":"https://youtu.be/TmhQCQr_DCA",
+"responsive design":"https://youtu.be/srvUrASNj0s"
 };
 
-reader.readAsText(file);
+
+/* ================= NORMALIZE ================= */
+
+function normalize(s){
+return s.toLowerCase().replace(/[^a-z ]/g,"").trim();
+}
+
+
+/* ================= PDF TEXT ================= */
+
+async function extractText(file){
+
+const reader=new FileReader();
+
+return new Promise(resolve=>{
+reader.onload=async function(){
+const typedarray=new Uint8Array(this.result);
+const pdf=await pdfjsLib.getDocument(typedarray).promise;
+
+let text="";
+for(let i=1;i<=pdf.numPages;i++){
+let page=await pdf.getPage(i);
+let content=await page.getTextContent();
+text+=content.items.map(item=>item.str).join(" ");
+}
+
+resolve(text.toLowerCase());
+};
+reader.readAsArrayBuffer(file);
+});
+
+}
+
+
+/* ================= ROADMAP ================= */
+
+function generateRoadmap(missing){
+
+if(!missing.length)
+return "<p style='color:green'>Perfect match 🎉</p>";
+
+let html="<h4>Learn Missing Skills</h4>";
+
+missing.forEach(skill=>{
+
+let link=courses[normalize(skill)] ||
+`https://www.youtube.com/results?search_query=${skill}+course`;
+
+html+=`
+<div class="skillBox">
+<b>${skill}</b><br>
+<a class="learn" target="_blank" href="${link}">
+Learn Course
+</a>
+</div>`;
+});
+
+return html;
 }
 
 
 
-function matchJobs(resumeText){
+/* ================= ANALYSIS ================= */
 
-let jobs=[];
+async function analyze(){
 
-db.collection("jobs").get().then(snapshot=>{
+const file=document.getElementById("file").files[0];
+if(!file){alert("Upload resume");return;}
+
+document.getElementById("result").innerHTML=
+"<div class='loader'>Analyzing resume...</div>";
+
+const text=await extractText(file);
+
+const snapshot=await db.collection("jobs").get();
+
+let results=[];
 
 snapshot.forEach(doc=>{
 
 let job=doc.data();
+let skills=(job.skills||[]).map(s=>normalize(s));
 
-let matched = job.skills.filter(skill =>
-resumeText.includes(skill.toLowerCase())
-);
+let matched=skills.filter(skill=>text.includes(skill));
+let missing=skills.filter(skill=>!matched.includes(skill));
 
-let missing = job.skills.filter(skill =>
-!resumeText.includes(skill.toLowerCase())
-);
+let skillMatch=Math.round((matched.length/skills.length)*100)||0;
 
-let score = Math.round((matched.length/job.skills.length)*100);
 
-if(score>0){
-jobs.push({
+/* ===== REAL ATS SCORE ===== */
+
+let ats=0;
+
+/* formatting */
+let formatting=20;
+if(text.length<400) formatting-=10;
+if(text.includes("�")) formatting-=10;
+ats+=formatting;
+
+/* sections */
+let sections=0;
+if(text.includes("experience")) sections+=5;
+if(text.includes("education")) sections+=5;
+if(text.includes("skills")) sections+=5;
+if(text.includes("project")) sections+=5;
+ats+=sections;
+
+/* keywords */
+ats+=Math.min(matched.length*5,25);
+
+/* skills */
+ats+=Math.round((matched.length/skills.length)*15);
+
+/* readability */
+let read=10;
+if(text.length<800) read-=5;
+if(text.split(".").length<5) read-=5;
+ats+=read;
+
+/* structure */
+let structure=0;
+if(text.match(/\d{10}/)) structure+=5;
+if(text.includes("@")) structure+=5;
+ats+=structure;
+
+ats=Math.max(0,Math.min(ats,100));
+
+/* store */
+results.push({
 title:job.title,
-score:score,
-matched:matched,
-missing:missing
+matched,
+missing,
+skillMatch,
+ats
 });
-}
-
-});
-
-jobs.sort((a,b)=>b.score-a.score);
-
-let output="";
-
-jobs.slice(0,3).forEach(job=>{
-output+=`
-<div class="job">
-<h3>${job.title}</h3>
-
-<p>Match Score: <b>${job.score}%</b></p>
-
-<p><b>Matched Skills:</b><br>
-${job.matched.join(", ")||"None"}
-</p>
-
-<p style="color:red">
-<b>Missing Skills:</b><br>
-${job.missing.join(", ")||"None"}
-</p>
-
-</div>
-`;
-});
-
-document.getElementById("result").innerHTML =
-output || "No matching jobs found";
-
-saveHistory(jobs);
 
 });
 
+
+if(results.length===0){
+document.getElementById("result").innerHTML=
+"<h3>No jobs in database</h3>";
+return;
 }
 
 
+/* BEST JOB */
+results.sort((a,b)=>b.skillMatch-a.skillMatch);
+let best=results[0];
 
-function saveHistory(results){
 
-const user = firebase.auth().currentUser;
+/* SAVE HISTORY */
+const user=auth.currentUser;
 
-if(!user) return;
-
-results.forEach(job=>{
-
-db.collection("users")
+await db.collection("users")
 .doc(user.uid)
 .collection("history")
 .add({
-title:job.title,
-score:job.score,
+title:best.title,
+score:best.skillMatch,
+ats:best.ats,
 date:new Date().toLocaleString()
 });
 
+
+/* DISPLAY */
+let html=`
+<div class="job best">
+<h2>Best Match → ${best.title}</h2>
+<b>Skill Match:</b> ${best.skillMatch}%<br>
+<b>ATS Score:</b> ${best.ats}/100
+</div>
+`;
+
+results.forEach(job=>{
+html+=`
+<div class="job">
+
+<h3>${job.title}</h3>
+
+<b>Skill Match:</b> ${job.skillMatch}%<br>
+<b>ATS Score:</b> ${job.ats}/100<br><br>
+
+<b>Matched:</b> ${job.matched.join(", ")||"None"}<br>
+<b style="color:red">Missing:</b> ${job.missing.join(", ")||"None"}
+
+${generateRoadmap(job.missing)}
+
+</div>`;
 });
+
+document.getElementById("result").innerHTML=html;
 
 }
 
 </script>
-
 </body>
 </html>
