@@ -1,85 +1,129 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+<title>ResumeAI Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body{
-      margin:0;
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      background: linear-gradient(135deg,#667eea,#764ba2);
-      font-family: Arial;
-    }
+<link rel="manifest" href="manifest.json">
 
-    .box{
-      background:white;
-      padding:30px;
-      border-radius:15px;
-      width:300px;
-      text-align:center;
-      box-shadow:0 10px 25px rgba(0,0,0,0.2);
-    }
+<style>
+body{
+margin:0;
+font-family: 'Segoe UI', sans-serif;
+background:linear-gradient(135deg,#0f172a,#1e3a8a);
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+}
 
-    input{
-      width:100%;
-      padding:12px;
-      margin:10px 0;
-      border-radius:8px;
-      border:1px solid #ccc;
-      font-size:16px;
-    }
+.container{
+text-align:center;
+}
 
-    button{
-      width:100%;
-      padding:12px;
-      margin-top:10px;
-      background:#667eea;
-      border:none;
-      color:white;
-      font-size:16px;
-      border-radius:8px;
-      cursor:pointer;
-    }
+.logo{
+font-size:32px;
+font-weight:bold;
+margin-bottom:10px;
+}
 
-    button:hover{
-      background:#5a67d8;
-    }
+.tag{
+font-size:14px;
+color:#c7d2fe;
+margin-bottom:30px;
+}
 
-    #msg{
-      margin-top:15px;
-      font-weight:bold;
-    }
-  </style>
+.card{
+background:white;
+color:black;
+padding:35px;
+width:320px;
+border-radius:18px;
+box-shadow:0 25px 60px rgba(0,0,0,0.3);
+}
+
+input{
+width:100%;
+padding:14px;
+margin:10px 0;
+border-radius:10px;
+border:1px solid #ddd;
+font-size:14px;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+border-radius:10px;
+background:#4f46e5;
+color:white;
+font-size:15px;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+background:#4338ca;
+}
+
+.secondary{
+background:#e0e7ff;
+color:#1e3a8a;
+}
+
+.secondary:hover{
+background:#c7d2fe;
+}
+
+#msg{
+margin-top:15px;
+font-size:14px;
+color:#dc2626;
+}
+
+.footer{
+margin-top:25px;
+font-size:12px;
+color:#c7d2fe;
+}
+</style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>Welcome Back 👋</h2>
+<div class="container">
 
-  <input id="email" type="email" placeholder="Enter email">
-  <input id="password" type="password" placeholder="Enter password">
+<div class="logo">ResumeAI</div>
+<div class="tag">Smart Resume Intelligence Platform</div>
 
-  <button onclick="login()">Login</button>
-  <button onclick="signup()">Create Account</button>
+<div class="card">
 
-  <div id="msg"></div>
+<h2>Welcome Back</h2>
+
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+<button onclick="signup()" class="secondary">Create Account</button>
+
+<div id="msg"></div>
+
 </div>
 
-<!-- Firebase Libraries -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<div class="footer">
+AI-Powered Resume Analyzer
+</div>
 
-<!-- Firebase Libraries -->
+</div>
+
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
-
 const firebaseConfig = {
   apiKey: "AIzaSyBvJGcM5bKgsdaiTSP4yytC-6Kldc-J35I",
   authDomain: "job-app-683fa.firebaseapp.com",
@@ -90,52 +134,88 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const auth=firebase.auth();
 
 
-// LOGIN
 function login(){
-  let email = emailInput.value;
-  let password = passwordInput.value;
+let email=document.getElementById("email").value.trim();
+let password=document.getElementById("password").value.trim();
+let msg=document.getElementById("msg");
 
-  firebase.auth().signInWithEmailAndPassword(email,password)
-  .then(()=>{
-    msg.innerText="Login Success ✅";
-    setTimeout(()=>window.location="dashboard.html",1000);
-  })
-  .catch(err=>msg.innerText=err.message);
+msg.style.color="red";
+msg.innerText="";
+
+auth.signInWithEmailAndPassword(email,password)
+.then(()=>{
+location.href="dashboard.html";
+})
+.catch(e=>{
+
+if(e.code==="auth/invalid-credential")
+msg.innerText="Incorrect email or password";
+
+else if(e.code==="auth/user-not-found")
+msg.innerText="Account not found";
+
+else if(e.code==="auth/wrong-password")
+msg.innerText="Wrong password";
+
+else if(e.code==="auth/invalid-email")
+msg.innerText="Invalid email format";
+
+else if(e.code==="auth/too-many-requests")
+msg.innerText="Too many attempts. Try again later";
+
+else if(e.code==="auth/network-request-failed")
+msg.innerText="No internet connection";
+
+else
+msg.innerText="Login failed. Try again.";
+
+});
 }
 
 
-// SIGNUP + SAVE USER DATA
+
 function signup(){
-  let email = emailInput.value;
-  let password = passwordInput.value;
+let email=document.getElementById("email").value.trim();
+let password=document.getElementById("password").value.trim();
+let msg=document.getElementById("msg");
 
-  firebase.auth().createUserWithEmailAndPassword(email,password)
-  .then(userCredential=>{
+msg.innerText="";
+msg.style.color="red";
 
-    let user = userCredential.user;
+auth.createUserWithEmailAndPassword(email,password)
+.then(()=>{
+msg.style.color="green";
+msg.innerText="Account created successfully! Please login.";
+})
+.catch(e=>{
 
-    // SAVE DATA TO DATABASE
-    db.collection("users").doc(user.uid).set({
-      email: user.email,
-      uid: user.uid,
-      createdAt: new Date()
-    });
+if(e.code==="auth/email-already-in-use")
+msg.innerText="Email already registered";
 
-    msg.innerText="Account Created ✅";
+else if(e.code==="auth/weak-password")
+msg.innerText="Password must be at least 6 characters";
 
-  })
-  .catch(err=>msg.innerText=err.message);
+else if(e.code==="auth/invalid-email")
+msg.innerText="Invalid email format";
+
+else if(e.code==="auth/network-request-failed")
+msg.innerText="Check internet connection";
+
+else
+msg.innerText="Signup failed. Try again.";
+
+});
 }
+</script>
 
 
-// input shortcuts
-let emailInput = document.getElementById("email");
-let passwordInput = document.getElementById("password");
-let msg = document.getElementById("msg");
-
+<script>
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("service-worker.js");
+}
 </script>
 
 </body>
